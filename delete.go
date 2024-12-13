@@ -146,6 +146,13 @@ func (b DeleteBuilder) From(from string) DeleteBuilder {
 	return builder.Set(b, "From", from).(DeleteBuilder)
 }
 
+// PreWhere adds PREWHERE expressions to the query
+//
+// See SelectBuilder.PreWhere for more information.
+func (b DeleteBuilder) PreWhere(pred interface{}, args ...interface{}) DeleteBuilder {
+	return builder.Append(b, "PreWhereParts", newWherePart(pred, args...)).(DeleteBuilder)
+}
+
 // Where adds WHERE expressions to the query.
 //
 // See SelectBuilder.Where for more information.

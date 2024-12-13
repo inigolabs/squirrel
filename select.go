@@ -17,6 +17,7 @@ type selectData struct {
 	Columns           []Sqlizer
 	From              Sqlizer
 	Joins             []Sqlizer
+	PreWhereParts     []Sqlizer
 	WhereParts        []Sqlizer
 	GroupBys          []string
 	HavingParts       []Sqlizer
@@ -103,6 +104,14 @@ func (d *selectData) toSqlRaw() (sqlStr string, args []interface{}, err error) {
 	if len(d.Joins) > 0 {
 		sql.WriteString(" ")
 		args, err = appendToSql(d.Joins, sql, " ", args)
+		if err != nil {
+			return
+		}
+	}
+
+	if len(d.PreWhereParts) > 0 {
+		sql.WriteString(" PREWHERE ")
+		args, err = appendToSql(d.PreWhereParts, sql, " AND ", args)
 		if err != nil {
 			return
 		}
@@ -317,6 +326,11 @@ func (b SelectBuilder) InnerJoin(join string, rest ...interface{}) SelectBuilder
 // CrossJoin adds a CROSS JOIN clause to the query.
 func (b SelectBuilder) CrossJoin(join string, rest ...interface{}) SelectBuilder {
 	return b.JoinClause("CROSS JOIN "+join, rest...)
+}
+
+// PreWhere adds an expression to the PREWHERE clause of the query
+func (b SelectBuilder) PreWhere(pred interface{}, args ...interface{}) SelectBuilder {
+	return builder.Append(b, "PreWhereParts", newWherePart(pred, args...)).(SelectBuilder)
 }
 
 // Where adds an expression to the WHERE clause of the query.
